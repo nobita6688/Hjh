@@ -37,14 +37,33 @@
         <h3>Server Types</h3>
         <button id="refresh-types">Refresh</button>
         <ul id="types-list"></ul>
+        <details style="margin-top:8px">
+          <summary>Create Type</summary>
+          <div>
+            <input id="type-name" placeholder="Name (e.g. Minecraft Forge)" />
+            <input id="type-image" placeholder="Docker image (e.g. itzg/minecraft-server:latest)" />
+            <input id="type-start" placeholder="Start command (optional)" />
+            <textarea id="type-env" rows="3" placeholder='Env JSON (e.g. {"EULA":"TRUE"})'></textarea>
+            <textarea id="type-ports" rows="3" placeholder='Ports JSON (e.g. [{"container":25565,"host":25565,"protocol":"tcp"}])'></textarea>
+            <textarea id="type-volumes" rows="3" placeholder='Volumes JSON (e.g. [{"host":"data","container":"/data"}])'></textarea>
+            <button id="add-type">Add Type</button>
+            <pre id="type-add-out"></pre>
+          </div>
+        </details>
       </section>
     </div>
     <section>
       <h3>Create Server</h3>
       <div>
         <input id="srv-name" placeholder="Name" />
-        <input id="srv-type" placeholder="Type ID (e.g. minecraft)" />
-        <input id="srv-node" placeholder="Node ID" />
+        <select id="srv-type-select"></select>
+        <select id="srv-node-select"></select>
+        <details>
+          <summary>Advanced overrides</summary>
+          <textarea id="srv-env" rows="3" placeholder='Env JSON override'></textarea>
+          <textarea id="srv-ports" rows="3" placeholder='Ports JSON override'></textarea>
+          <textarea id="srv-volumes" rows="3" placeholder='Volumes JSON override'></textarea>
+        </details>
         <button id="create-server">Create</button>
       </div>
     </section>
@@ -66,13 +85,21 @@
         return res.json();
       }
 
+      let TYPES_CACHE = [];
+      let NODES_CACHE = [];
       async function loadNodes() {
         const rows = await fetchJson('/api/nodes');
+        NODES_CACHE = rows;
         j('#nodes-body').innerHTML = rows.map(r => `<tr><td>${r.id}</td><td>${r.name}</td><td>${r.base_url}</td></tr>`).join('');
+        const sel = j('#srv-node-select');
+        sel.innerHTML = rows.map(r => `<option value="${r.id}">${r.name} (${r.id})</option>`).join('');
       }
       async function loadTypes() {
         const rows = await fetchJson('/api/server-types');
+        TYPES_CACHE = rows;
         j('#types-list').innerHTML = rows.map(r => `<li><code>${r.id}</code> — ${r.name} <small>${r.image}</small></li>`).join('');
+        const sel = j('#srv-type-select');
+        sel.innerHTML = rows.map(r => `<option value="${r.id}">${r.name} (${r.id})</option>`).join('');
       }
       async function loadServers() {
         const rows = await fetchJson('/api/servers');
@@ -93,13 +120,37 @@
         const res = await fetchJson('/api/install-token', { method: 'POST' });
         j('#token-out').textContent = `GP_TOKEN=${res.token} curl -fsSL ${location.origin}/install.sh | bash`;
       };
+      j('#add-type').onclick = async () => {
+        try {
+          const name = j('#type-name').value.trim();
+          const image = j('#type-image').value.trim();
+          const startCmd = j('#type-start').value.trim();
+          const env = j('#type-env').value.trim() ? JSON.parse(j('#type-env').value) : {};
+          const ports = j('#type-ports').value.trim() ? JSON.parse(j('#type-ports').value) : [];
+          const volumes = j('#type-volumes').value.trim() ? JSON.parse(j('#type-volumes').value) : [];
+          if (!name || !image) return alert('Name and image required');
+          const res = await fetchJson('/api/server-types', { method: 'POST', body: JSON.stringify({ name, image, startCmd, env, ports, volumes }) });
+          j('#type-add-out').textContent = `Created type id: ${res.id}`;
+          loadTypes();
+        } catch (e) {
+          j('#type-add-out').textContent = 'Failed to create type (check JSON)';
+        }
+      };
+
       j('#create-server').onclick = async () => {
-        const name = j('#srv-name').value.trim();
-        const typeId = j('#srv-type').value.trim();
-        const nodeId = j('#srv-node').value.trim();
-        if (!name || !typeId || !nodeId) return alert('Fill all fields');
-        await fetchJson('/api/servers', { method: 'POST', body: JSON.stringify({ name, typeId, nodeId }) });
-        loadServers();
+        try {
+          const name = j('#srv-name').value.trim();
+          const typeId = j('#srv-type-select').value;
+          const nodeId = j('#srv-node-select').value;
+          const env = j('#srv-env').value.trim() ? JSON.parse(j('#srv-env').value) : undefined;
+          const ports = j('#srv-ports').value.trim() ? JSON.parse(j('#srv-ports').value) : undefined;
+          const volumes = j('#srv-volumes').value.trim() ? JSON.parse(j('#srv-volumes').value) : undefined;
+          if (!name || !typeId || !nodeId) return alert('Fill all fields');
+          await fetchJson('/api/servers', { method: 'POST', body: JSON.stringify({ name, typeId, nodeId, ...(env?{env}:{}) , ...(ports?{ports}:{}) , ...(volumes?{volumes}:{}) }) });
+          loadServers();
+        } catch (e) {
+          alert('Failed to create server (check JSON)');
+        }
       };
 
       loadNodes(); loadTypes(); loadServers();

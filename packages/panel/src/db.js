@@ -106,6 +106,101 @@ export function initDb() {
     tx(defaults);
   }
 
+  // Ensure additional common server types exist (idempotent)
+  const insertIgnore = db.prepare(`INSERT OR IGNORE INTO server_types (id, name, image, start_cmd, env_json, ports_json, volumes_json, created_at)
+    VALUES (@id, @name, @image, @start_cmd, @env_json, @ports_json, @volumes_json, @created_at)`);
+  const now2 = new Date().toISOString();
+  const moreTypes = [
+    {
+      id: 'minecraft-paper',
+      name: 'Minecraft Paper',
+      image: 'itzg/minecraft-server:latest',
+      start_cmd: '',
+      env_json: JSON.stringify({ TYPE: 'PAPER', EULA: 'TRUE', MEMORY: '2G' }),
+      ports_json: JSON.stringify([{ container: 25565, host: 25565, protocol: 'tcp' }]),
+      volumes_json: JSON.stringify([{ host: 'data', container: '/data' }]),
+      created_at: now2
+    },
+    {
+      id: 'minecraft-forge',
+      name: 'Minecraft Forge',
+      image: 'itzg/minecraft-server:latest',
+      start_cmd: '',
+      env_json: JSON.stringify({ TYPE: 'FORGE', EULA: 'TRUE', MEMORY: '2G' }),
+      ports_json: JSON.stringify([{ container: 25565, host: 25565, protocol: 'tcp' }]),
+      volumes_json: JSON.stringify([{ host: 'data', container: '/data' }]),
+      created_at: now2
+    },
+    {
+      id: 'minecraft-bungeecord',
+      name: 'Minecraft BungeeCord',
+      image: 'itzg/minecraft-server:latest',
+      start_cmd: '',
+      env_json: JSON.stringify({ TYPE: 'BUNGEECORD', EULA: 'TRUE', MEMORY: '1G' }),
+      ports_json: JSON.stringify([{ container: 25565, host: 25565, protocol: 'tcp' }]),
+      volumes_json: JSON.stringify([{ host: 'data', container: '/data' }]),
+      created_at: now2
+    },
+    {
+      id: 'csgo',
+      name: 'CS:GO',
+      image: 'cm2network/csgo',
+      start_cmd: '',
+      env_json: JSON.stringify({}),
+      ports_json: JSON.stringify([
+        { container: 27015, host: 27015, protocol: 'tcp' },
+        { container: 27015, host: 27015, protocol: 'udp' }
+      ]),
+      volumes_json: JSON.stringify([{ host: 'csgo', container: '/home/steam/csgo-dedicated' }]),
+      created_at: now2
+    },
+    {
+      id: 'rust',
+      name: 'Rust',
+      image: 'didstopia/rust-server',
+      start_cmd: '',
+      env_json: JSON.stringify({}),
+      ports_json: JSON.stringify([
+        { container: 28015, host: 28015, protocol: 'tcp' },
+        { container: 28015, host: 28015, protocol: 'udp' }
+      ]),
+      volumes_json: JSON.stringify([{ host: 'rust', container: '/steamcmd/rust' }]),
+      created_at: now2
+    },
+    {
+      id: 'fastapi',
+      name: 'Python FastAPI',
+      image: 'tiangolo/uvicorn-gunicorn-fastapi:python3.11',
+      start_cmd: '',
+      env_json: JSON.stringify({}),
+      ports_json: JSON.stringify([{ container: 80, host: 8080, protocol: 'tcp' }]),
+      volumes_json: JSON.stringify([{ host: 'app', container: '/app' }]),
+      created_at: now2
+    },
+    {
+      id: 'node-express',
+      name: 'Node.js Express',
+      image: 'node:20-alpine',
+      start_cmd: 'node server.js',
+      env_json: JSON.stringify({ NODE_ENV: 'production' }),
+      ports_json: JSON.stringify([{ container: 3000, host: 3000, protocol: 'tcp' }]),
+      volumes_json: JSON.stringify([{ host: 'app', container: '/app' }]),
+      created_at: now2
+    },
+    {
+      id: 'java-spring',
+      name: 'Java Spring',
+      image: 'eclipse-temurin:17-jre',
+      start_cmd: 'java -jar app.jar',
+      env_json: JSON.stringify({}),
+      ports_json: JSON.stringify([{ container: 8080, host: 8080, protocol: 'tcp' }]),
+      volumes_json: JSON.stringify([{ host: 'app', container: '/app' }]),
+      created_at: now2
+    }
+  ];
+  const tx2 = db.transaction((rows) => rows.forEach((r) => insertIgnore.run(r)));
+  tx2(moreTypes);
+
   return db;
 }
 
