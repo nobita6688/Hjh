@@ -1,0 +1,13 @@
+node_modules
+*.log
+.DS_Store
+dist
+build
+.env
+data/
+*.sqlite
+*.db
+coverage
+/.cache
+.turbo
+.pnpm-store

@@ -1,0 +1,19 @@
+{
+  "name": "gp.panel-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm:panel:dev\" \"npm:agent:dev\"",
+    "panel:dev": "npm --workspace @gp.panel/panel run dev",
+    "agent:dev": "npm --workspace @gp.panel/agent run dev",
+    "panel:start": "npm --workspace @gp.panel/panel start",
+    "agent:start": "npm --workspace @gp.panel/agent start"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.1.7"
+  }
+}
