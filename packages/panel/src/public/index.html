@@ -1,0 +1,109 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>gp.panel — powered by Nobita</title>
+    <style>
+      body{font-family:system-ui, sans-serif;margin:20px;max-width:900px}
+      header{display:flex;justify-content:space-between;align-items:center}
+      h1{margin:0}
+      .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+      section{border:1px solid #ddd;border-radius:8px;padding:12px}
+      input,button,select{padding:8px;margin:4px 0}
+      code{background:#f6f6f6;padding:2px 4px;border-radius:4px}
+      table{width:100%;border-collapse:collapse}
+      th,td{border:1px solid #eee;padding:6px;text-align:left;font-size:14px}
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>gp.panel</h1>
+      <div>powered by <strong>Nobita</strong></div>
+    </header>
+    <p>Use API key in Authorization header: <code>Bearer dev-admin-key</code> (dev)</p>
+    <div class="grid">
+      <section>
+        <h3>Nodes</h3>
+        <button id="refresh-nodes">Refresh</button>
+        <button id="create-token">Create install token</button>
+        <pre id="token-out"></pre>
+        <table>
+          <thead><tr><th>ID</th><th>Name</th><th>URL</th></tr></thead>
+          <tbody id="nodes-body"></tbody>
+        </table>
+      </section>
+      <section>
+        <h3>Server Types</h3>
+        <button id="refresh-types">Refresh</button>
+        <ul id="types-list"></ul>
+      </section>
+    </div>
+    <section>
+      <h3>Create Server</h3>
+      <div>
+        <input id="srv-name" placeholder="Name" />
+        <input id="srv-type" placeholder="Type ID (e.g. minecraft)" />
+        <input id="srv-node" placeholder="Node ID" />
+        <button id="create-server">Create</button>
+      </div>
+    </section>
+    <section>
+      <h3>Servers</h3>
+      <button id="refresh-servers">Refresh</button>
+      <table>
+        <thead><tr><th>ID</th><th>Name</th><th>Type</th><th>Node</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="servers-body"></tbody>
+      </table>
+    </section>
+    <script>
+      const API = '';
+      const AUTH = { headers: { Authorization: 'Bearer dev-admin-key' } };
+      const j = (sel) => document.querySelector(sel);
+
+      async function fetchJson(path, opts={}) {
+        const res = await fetch(API + path, { ...opts, headers: { 'content-type': 'application/json', ...(opts.headers||{}), ...AUTH.headers } });
+        return res.json();
+      }
+
+      async function loadNodes() {
+        const rows = await fetchJson('/api/nodes');
+        j('#nodes-body').innerHTML = rows.map(r => `<tr><td>${r.id}</td><td>${r.name}</td><td>${r.base_url}</td></tr>`).join('');
+      }
+      async function loadTypes() {
+        const rows = await fetchJson('/api/server-types');
+        j('#types-list').innerHTML = rows.map(r => `<li><code>${r.id}</code> — ${r.name} <small>${r.image}</small></li>`).join('');
+      }
+      async function loadServers() {
+        const rows = await fetchJson('/api/servers');
+        j('#servers-body').innerHTML = rows.map(r => `<tr><td>${r.id}</td><td>${r.name}</td><td>${r.type_name}</td><td>${r.node_name}</td><td>${r.status}</td><td>
+          <button onclick="startServer('${'${r.id}'}')">Start</button>
+          <button onclick="stopServer('${'${r.id}'}')">Stop</button>
+          <button onclick="deleteServer('${'${r.id}'}')">Delete</button>
+        </td></tr>`).join('');
+      }
+      async function startServer(id){ await fetchJson(`/api/servers/${id}/start`, { method: 'POST' }); loadServers(); }
+      async function stopServer(id){ await fetchJson(`/api/servers/${id}/stop`, { method: 'POST' }); loadServers(); }
+      async function deleteServer(id){ await fetchJson(`/api/servers/${id}`, { method: 'DELETE' }); loadServers(); }
+
+      j('#refresh-nodes').onclick = loadNodes;
+      j('#refresh-types').onclick = loadTypes;
+      j('#refresh-servers').onclick = loadServers;
+      j('#create-token').onclick = async () => {
+        const res = await fetchJson('/api/install-token', { method: 'POST' });
+        j('#token-out').textContent = `GP_TOKEN=${res.token} curl -fsSL ${location.origin}/install.sh | bash`;
+      };
+      j('#create-server').onclick = async () => {
+        const name = j('#srv-name').value.trim();
+        const typeId = j('#srv-type').value.trim();
+        const nodeId = j('#srv-node').value.trim();
+        if (!name || !typeId || !nodeId) return alert('Fill all fields');
+        await fetchJson('/api/servers', { method: 'POST', body: JSON.stringify({ name, typeId, nodeId }) });
+        loadServers();
+      };
+
+      loadNodes(); loadTypes(); loadServers();
+    </script>
+  </body>
+  </html>
+
