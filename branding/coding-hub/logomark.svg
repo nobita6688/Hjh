@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title>Coding Hub — Logomark</title>
+  <desc>Minimal circular hub with three nodes, representing collaboration and code.</desc>
+
+  <!-- Brand color: Violet #6E56CF -->
+  <g id="logomark" stroke="#6E56CF" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Outer ring -->
+    <circle cx="128" cy="128" r="84" fill="none"/>
+  </g>
+
+  <!-- Nodes -->
+  <g id="nodes" fill="#6E56CF">
+    <!-- Top node (90°) -->
+    <circle cx="128" cy="44" r="12"/>
+    <!-- Bottom-left node (210°) -->
+    <circle cx="55.256" cy="170" r="12"/>
+    <!-- Bottom-right node (330°) -->
+    <circle cx="200.744" cy="170" r="12"/>
+  </g>
+</svg>
+
