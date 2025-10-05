@@ -1,0 +1,40 @@
+{
+    "bot_name": "PythonBot",
+    "version": "1.0.0",
+    "debug": false,
+    "commands": {
+        "help": "Show available commands",
+        "time": "Show current time",
+        "weather": "Get weather information",
+        "joke": "Tell a random joke",
+        "quote": "Get inspirational quote",
+        "history": "Show command history",
+        "status": "Show bot status",
+        "echo": "Echo back your message"
+    },
+    "responses": {
+        "greeting": "Hello! I'm your Python bot. How can I help you?",
+        "goodbye": "Goodbye! Have a great day!",
+        "error": "Sorry, I encountered an error. Please try again.",
+        "unknown_command": "I don't understand that command. Type 'help' for available commands."
+    },
+    "features": {
+        "command_history": true,
+        "logging": true,
+        "config_reload": true,
+        "error_handling": true
+    },
+    "logging": {
+        "level": "INFO",
+        "file": "bot.log",
+        "max_size": "10MB",
+        "backup_count": 5
+    },
+    "api_keys": {
+        "openweathermap": "",
+        "openai": "",
+        "discord_token": "",
+        "telegram_token": "",
+        "slack_token": ""
+    }
+}
