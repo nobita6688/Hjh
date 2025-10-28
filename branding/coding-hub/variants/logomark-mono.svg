@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title>Coding Hub — Logomark (Monochrome)</title>
+  <desc>Single-color logomark suitable for embossing, stamps, and constraints.</desc>
+
+  <g stroke="#000000" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="128" cy="128" r="84" fill="none"/>
+  </g>
+  <g fill="#000000">
+    <circle cx="128" cy="44" r="12"/>
+    <circle cx="55.256" cy="170" r="12"/>
+    <circle cx="200.744" cy="170" r="12"/>
+  </g>
+</svg>
+
